@@ -28,5 +28,5 @@ wait_for_service(db.hostname or "postgres", db.port or 5432, "PostgreSQL")
 wait_for_service(redis.hostname or "redis", redis.port or 6379, "Redis")
 PY
 
-python -m alembic upgrade head
+alembic upgrade head
 python -m app.bot.runner

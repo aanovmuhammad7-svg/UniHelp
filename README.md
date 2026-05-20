@@ -85,7 +85,7 @@ poetry install
 ### 3. Применить миграции
 
 ```powershell
-.\.venv\Scripts\python.exe -m alembic upgrade head
+alembic upgrade head
 ```
 
 Создание таблиц выполняется только через `Alembic`. Бот не создает схему автоматически при старте.
@@ -151,9 +151,17 @@ docker compose down -v
 Полезные команды:
 
 ```powershell
-.\.venv\Scripts\python.exe -m alembic upgrade head
-.\.venv\Scripts\python.exe -m alembic current
-.\.venv\Scripts\python.exe -m alembic history
+alembic upgrade head
+alembic current
+alembic history
+```
+
+Если PostgreSQL запущен в Docker, а локальный `DATABASE_URL` в `.env` отличается, команды миграций удобнее выполнять внутри контейнера:
+
+```powershell
+docker compose exec bot alembic current
+docker compose exec bot alembic history
+docker compose exec bot alembic upgrade head
 ```
 
 ## Что можно улучшить дальше
