@@ -33,6 +33,7 @@ class AppSettings(BaseAppSettings):
     # Telegram bot
     telegram_bot_token: SecretStr
     telegram_parse_mode: str = "HTML"
+    telegram_admin_ids: tuple[int, ...] = ()
 
     # OpenAI
     openai_api_key: SecretStr
@@ -112,6 +113,19 @@ class AppSettings(BaseAppSettings):
             return False
 
         raise ValueError("debug must be a boolean-like value")
+
+    @field_validator("telegram_admin_ids", mode="before")
+    @classmethod
+    def parse_admin_ids(cls, value: object) -> tuple[int, ...]:
+        if value in (None, "", (), [], "[]"):
+            return ()
+        if isinstance(value, (list, tuple, set)):
+            return tuple(int(item) for item in value)
+
+        normalized = str(value).strip()
+        if not normalized:
+            return ()
+        return tuple(int(part.strip()) for part in normalized.split(",") if part.strip())
 
 
     def configure_logging(self) -> None:

@@ -1,13 +1,27 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 
-def main_menu_keyboard(menu_topics: list[str]) -> ReplyKeyboardMarkup:
+TOPIC_BUTTONS = {
+    "Адаптация": "Адаптация в первые недели",
+    "Стипендия": "Стипендия и выплаты",
+    "Общежитие": "Общежитие",
+    "Преподаватели": "Общение с преподавателем",
+}
+
+BUTTON_FAQ = "FAQ"
+BUTTON_ABOUT = "О боте"
+BUTTON_CONTACTS = "Контакты"
+BUTTON_CLEAR_CHAT = "Очистить чат"
+BUTTON_HELP = "Помощь"
+
+
+def main_menu_keyboard() -> ReplyKeyboardMarkup:
     rows = [
-        [KeyboardButton(text=menu_topics[0]), KeyboardButton(text=menu_topics[1])],
-        [KeyboardButton(text=menu_topics[2]), KeyboardButton(text=menu_topics[3])],
-        [KeyboardButton(text="FAQ"), KeyboardButton(text="О проекте")],
-        [KeyboardButton(text="Контакты"), KeyboardButton(text="Очистить диалог")],
-        [KeyboardButton(text="Помощь")],
+        [KeyboardButton(text="Адаптация"), KeyboardButton(text="Стипендия")],
+        [KeyboardButton(text="Общежитие"), KeyboardButton(text="Преподаватели")],
+        [KeyboardButton(text=BUTTON_FAQ), KeyboardButton(text=BUTTON_ABOUT)],
+        [KeyboardButton(text=BUTTON_CONTACTS), KeyboardButton(text=BUTTON_HELP)],
+        [KeyboardButton(text=BUTTON_CLEAR_CHAT)],
     ]
     return ReplyKeyboardMarkup(
         keyboard=rows,

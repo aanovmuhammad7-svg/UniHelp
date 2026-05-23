@@ -61,6 +61,7 @@ REDIS_URL=redis://localhost:6379/0
 REDIS_MAX_CONNECTIONS=10
 ENABLE_RATE_LIMITER=False
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_ADMIN_IDS=123456789
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4.1-mini
 OPENAI_TIMEOUT_SECONDS=15
@@ -106,6 +107,7 @@ alembic upgrade head
 
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_ADMIN_IDS=123456789
 OPENAI_API_KEY=your_openai_api_key
 ```
 

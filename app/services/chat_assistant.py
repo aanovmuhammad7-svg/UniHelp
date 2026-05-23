@@ -32,7 +32,7 @@ class ChatAssistantService:
     ) -> str:
         history = await self.history_repository.get_history(user_id)
         history = list(reversed(history))
-        knowledge_context = self.knowledge_base_service.build_context(user_message)
+        knowledge_context = await self.knowledge_base_service.build_context(user_message)
 
         messages: list[dict[str, str]] = [
             {"role": "system", "content": settings.assistant_system_prompt},
@@ -42,11 +42,38 @@ class ChatAssistantService:
 
         messages.extend(
             [
-            *history,
-            {"role": "user", "content": user_message},
+                *history,
+                {"role": "user", "content": user_message},
             ]
         )
 
+        try:
+            answer = await self._request_openai(messages)
+        except RuntimeError as exc:
+            answer = await self.knowledge_base_service.build_fallback_response(
+                user_message=user_message,
+                error=str(exc),
+            )
+
+        await self.history_repository.append_messages(
+            user_id,
+            [
+                {"role": "user", "content": user_message},
+                {"role": "assistant", "content": answer},
+            ],
+        )
+
+        if self.user_activity_repository is not None and profile is not None and chat_id is not None:
+            db_user_id = await self.user_activity_repository.upsert_user(profile)
+            if db_user_id is not None:
+                await self.user_activity_repository.save_message(db_user_id, chat_id, "user", user_message)
+                await self.user_activity_repository.save_message(db_user_id, chat_id, "assistant", answer)
+        return answer
+
+    async def reset_dialog(self, user_id: int) -> None:
+        await self.history_repository.clear_history(user_id)
+
+    async def _request_openai(self, messages: list[dict[str, str]]) -> str:
         try:
             response = await asyncio.wait_for(
                 self.client.chat.completions.create(
@@ -78,22 +105,5 @@ class ChatAssistantService:
 
         answer = (response.choices[0].message.content or "").strip()
         if not answer:
-            answer = "Не удалось сгенерировать ответ. Попробуй сформулировать вопрос немного иначе."
-
-        await self.history_repository.append_messages(
-            user_id,
-            [
-                {"role": "user", "content": user_message},
-                {"role": "assistant", "content": answer},
-            ],
-        )
-
-        if self.user_activity_repository is not None and profile is not None and chat_id is not None:
-            db_user_id = await self.user_activity_repository.upsert_user(profile)
-            if db_user_id is not None:
-                await self.user_activity_repository.save_message(db_user_id, chat_id, "user", user_message)
-                await self.user_activity_repository.save_message(db_user_id, chat_id, "assistant", answer)
+            raise RuntimeError("OpenAI returned an empty response.")
         return answer
-
-    async def reset_dialog(self, user_id: int) -> None:
-        await self.history_repository.clear_history(user_id)
